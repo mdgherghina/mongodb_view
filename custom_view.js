@@ -83,6 +83,55 @@ db.createView('datadog', 'customers', [{
     },
 },
 {
+    $lookup: {
+        from: "lotteryentries",
+        let: { "lotteryRefId": "$_id" },
+        pipeline: [
+            {
+                $match: {
+                    $expr: { $eq: ["$customer", "$$lotteryRefId"] }
+                }
+            },{    
+            $lookup: {
+                from: "lotteries",
+                let: { "lottery2RefId": "$lottery" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ["$_id", "$$lottery2RefId"] }
+                        }
+                    },
+                    {
+                        $project: {
+                            _id: 1,
+                            slug: 1,
+                            openDate: 1,
+                            closeDate: 1
+                        
+                        }
+                    }
+                ],
+                as: "lottery"
+            }},
+            {
+                $project: {
+                    _id: 1,
+                    walletsWithPaidBalance: 1,
+                    totalPaidBalance: 1,
+                    galaxyAllocation: 1,
+                    winningTickets: 1,
+                    wallets: 1,
+                    mainGalaxyAddress: 1,
+                    lottery: 1,
+                    createdAt: 1,
+                    updatedAt: 1
+                }
+            }
+        ],
+        as: "lotteryentry"
+    },
+},
+{
     $project: {
         _id: 1,
         email: 1,
@@ -91,6 +140,8 @@ db.createView('datadog', 'customers', [{
         wallets: 1,
         telegram: 1,
         stakes: 1,
-        identity: 1
+        identity: 1,
+        lotteryentry: 1
     }
 }])
+
